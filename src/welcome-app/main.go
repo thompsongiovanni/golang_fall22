@@ -36,6 +36,7 @@ func main() {
 	//It is important to note the url in http.Handle can be whatever we like, so long as we are consistent.
 
 	//This method takes in the URL path "/" and a function that takes in a response writer, and a http request.
+	// **** THIS IS THE MAIN PATH /
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
 		//Takes the name from the URL query e.g ?name=Martin, will set welcome.Name = Martin.
