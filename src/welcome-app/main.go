@@ -8,6 +8,7 @@ import (
 )
 
 // Create a struct that holds information to be displayed in our HTML file
+// hi
 type Welcome struct {
 	Name string
 	Time string
