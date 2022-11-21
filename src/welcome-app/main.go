@@ -5,54 +5,95 @@ import (
 	"html/template"
 	"net/http"
 	"time"
+	"encoding/json"
 )
 
-// Create a struct that holds information to be displayed in our HTML file
-// hi
+/* type Welcome struct {
+	Name string
+	Time string
+}
+
+type JsonResponse struct {
+	Value1 string `json:"key1"`
+	Value2 string `json:"key2"`
+	JsonNested JsonNested `json:"JsonNested`
+}
+
+type JsonNested struct {
+	NestedValue1 string `json:"nestedKey1"`
+	NestedValue2 string `json:"nestedKey2"`
+} */
+
 type Welcome struct {
 	Name string
 	Time string
 }
 
-// Go application entrypoint
+type ReturnResp struct {
+	FirstName string `json:"firstName"`
+	LastName string `json:"lastName"`
+	ReturnNested ReturnNested `json:"ReturnNested"`
+}
+
+type ReturnNested struct {
+	NestedStreet string `json:"street"`
+	NestedCity string `json:"city"`
+	NestedEmail string `json:email`
+	NestedPhone string `json:phone`
+}
+
 func main() {
-	//Instantiate a Welcome struct object and pass in some random information.
-	//We shall get the name of the user as a query parameter from the URL
 	welcome := Welcome{"Anonymous", time.Now().Format(time.Stamp)}
-
-	//We tell Go exactly where we can find our html file. We ask Go to parse the html file (Notice
-	// the relative path). We wrap it in a call to template.Must() which handles any errors and halts if there are fatal errors
-
 	templates := template.Must(template.ParseFiles("templates/welcome-template.html"))
 
-	//Our HTML comes with CSS that go needs to provide when we run the app. Here we tell go to create
-	// a handle that looks in the static directory, go then uses the "/static/" as a url that our
-	//html can refer to when looking for our css and other files.
+	/*nested := JsonNested{
+		NestedValue1: "first nested value",
+		NestedValue2: "second nested value",
+	}
 
-	http.Handle("/static/", //final url can be anything
+	jsonResp := JsonResponse{
+		Value1: "some Data",
+		Value2: "other Data",
+		JsonNested: nested,
+	} */
+
+	nested := ReturnNested{
+		NestedStreet: "123 Vice City",
+		NestedCity: "Las Vegas, Nevada",
+		NestedEmail: "johndoe123@gmail.com",
+		NestedPhone: "(718) 555-9037",
+	}
+
+	returnResp := ReturnResp{
+		FirstName: "John",
+		LastName: "Doe",
+		ReturnNested: nested,
+	}
+	
+	http.Handle("/static/",
 		http.StripPrefix("/static/",
-			http.FileServer(http.Dir("static")))) //Go looks in the relative "static" directory first using http.FileServer(), then matches it to a
-	//url of our choice as shown in http.Handle("/static/"). This url is what we need when referencing our css files
-	//once the server begins. Our html code would therefore be <link rel="stylesheet"  href="/static/stylesheet/...">
-	//It is important to note the url in http.Handle can be whatever we like, so long as we are consistent.
-
-	//This method takes in the URL path "/" and a function that takes in a response writer, and a http request.
-	// **** THIS IS THE MAIN PATH /
+			http.FileServer(http.Dir("static"))))
+	
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-		//Takes the name from the URL query e.g ?name=Martin, will set welcome.Name = Martin.
 		if name := r.FormValue("name"); name != "" {
 			welcome.Name = name
 		}
-		//If errors show an internal server error message
-		//I also pass the welcome struct to the welcome-template.html file.
 		if err := templates.ExecuteTemplate(w, "welcome-template.html", welcome); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
 
-	//Start the web server, set the port to listen to 8080. Without a path it assumes localhost
-	//Print any errors from starting the webserver using fmt
+	/*http.HandleFunc("/jsonResponse", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(jsonResp)
+	})*/
+
+	http.HandleFunc("/returnResp", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(returnResp)
+	})
+
+	// third path, get/fetch, return an json object like an API , 2 nested objects {firstname:"", lastname:"", address:{street:"", city...}, contactInfo:{email:"", phone:""}}
+	// 3 new structs, 2 new values
+
 	fmt.Println("Listening")
 	fmt.Println(http.ListenAndServe(":8080", nil))
 }
